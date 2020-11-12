@@ -1,0 +1,27 @@
+#jspsych-content img {
+   max-width: 100%; /* this is mainly an IE 10-11 fix */
+   height: auto;
+ }
+
+.estimate {
+    display: inline-block;
+    text-align: left;
+    vertical-align: top;
+    margin: 0 10px;
+}
+
+.estimate label {
+    font-size: 14px;
+    line-height: 1em;
+}
+
+input[type="radio" i] {
+    margin: 0;
+    line-height: 1em;
+}
+
+br {
+    line-height: 1em;
+    font-size: 10px;
+    margin: 0;
+}

@@ -56,23 +56,19 @@ document.addEventListener("DOMContentLoaded", function() {
 //}
     
     //Need to assign a condition
-    //Need to show an image
-    //Need to randomly assign which image on a trial
-    //Depends on condition and random assignment
-    //Need a screen before the image saying what question will be asked
-    //Need a screen after the image for input
     //Probably need to force full screen/ask mike what min pixel dimensions should be
     //should there be a maximum too? probably.
-    //do the preload images thing
-    
-    //need to get images in order, assign distance, orientation, number info to each?
     //limit text inputs to numbers, something about conditional timelines?
+    //for distance estimates, need to figure out what the last unit selected was, and make that the default selection on the next trial
+    //get data in the format we want
+    //still need instructions
+    //still need staircase procedure
+    //still need toggle condition
     
-
     
     allvars = {
         distances: [5,25,50,75,100,150,200],
-        orientations: [0,15,30,45],
+        orientations: [0,10,20,30],
         numbers: [1,3,6],
         estimate_types: ["Distance", "Orientation", "Number"]
     }
@@ -82,9 +78,11 @@ document.addEventListener("DOMContentLoaded", function() {
     nunique = combos.length/3
     
     images = [];
+    imagenames = ["SL","WL"];
+    ntrials = 2;
     switch (condition){
         case "SL":
-            images = jsPsych.randomization.sampleWithReplacement(["SL.PNG"],5);
+            images = jsPsych.randomization.sampleWithReplacement(["SL.PNG"],2);
             for (var i = 0; i < nunique; i++) {
                 //images.push("SL" + combos[i].distances + combos[i].orientations + combos[i].numbers + ".PNG");
                 tempstr = "SL" + combos[i].distances + combos[i].orientations + combos[i].numbers + ".PNG";
@@ -95,14 +93,14 @@ document.addEventListener("DOMContentLoaded", function() {
     //                instructions = census_instructions;
             break;
         case "WL":
-            images = jsPsych.randomization.sampleWithReplacement(["WL.PNG"],5);
+            images = jsPsych.randomization.sampleWithReplacement(["WL.PNG"],ntrials);
     //                practice_stims = practice_compas;
     //                definitions = compas_definitions;
     //                response_choices = ['Will Not Re-offend', 'Will Re-offend'];
     //                instructions = compas_instructions;
             break;
         case "Toggle":
-            images = jsPsych.randomization.sampleWithReplacement(["SL.PNG","WL.PNG"],5);
+            images = jsPsych.randomization.sampleWithReplacement(["SL.PNG","WL.PNG"],ntrials);
     }
     // }
     test_stimuli = [];
@@ -267,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var questionPrompt = {
           type: "html-keyboard-response",
           stimulus: function(){
-              var temp_html = "<p> You will be asked for a " + jsPsych.timelineVariable('estimate_type',true) + " estimate</p>"
+              var temp_html = "<p> You will be asked to estimate <span style='color:red;font-weight: bold'>" + jsPsych.timelineVariable('estimate_type',true) + "</span></p>"
               return temp_html;
           },
           choices: jsPsych.NO_KEYS,
@@ -275,38 +273,75 @@ document.addEventListener("DOMContentLoaded", function() {
           post_trial_gap: 500
           };
     
-        //var containerWidth = document.querySelector('#jspsych-content').clientWidth;
-        //console.log(containerWidth);
-    
-//        var image = {
-//          type: "image-keyboard-response2",
-//          stimulus: jsPsych.timelineVariable('stimulus'),
-//          choices: " ",
-//          post_trial_gap: 500
-//          };
-
-            var image = {
+        var image = {
           type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Ready"],
           post_trial_gap: 500
           };
     
+    var toggle_image = {
+        type: "image-button-response",
+          stimulus: jsPsych.timelineVariable('stimulus'),
+          choices: ["Toggle View", "Ready"],
+          post_trial_gap: 500
+        
+    }
+    
+    
+    
+var loop_node = {
+    on_start: function(trial){
+        //console.log(trial.stimulus);
+        if (jsPsych.data.get().last(1).values()[0].stimulus == "WL.PNG"){
+            console.log("toggled!");
+        }
+//        trial.data.stimulus_type = 'incongruent';
+    },
+//    on_finish: function(trial){
+//        if(data.values()[0].button_pressed == 0){
+//            console.log(trial.stimulus);
+//        }
+//        
+////        trial.data.stimulus_type = 'incongruent';
+//    },
+    timeline: [toggle_image],
+    loop_function: function(data){
+        if(data.values()[0].button_pressed == 0){
+//            console.log(data.values()[0].stimulus)
+//            console.log(trial.stimulus);
+//            stimulus: "SL.PNG";
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+    
     estimate_html1 = '<p> <div class = "estimate">'
-    estimate_html2 = ': <input name="estimate" type="text" size = 5 /></div><div class = "estimate">'
-    estimate_html3 = '<input name="unit" type="radio" value = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters"><label for="meters"> Metersaaaaaaaaa</label><br>'
+    estimate_html2 = ': <input id = "mynumberinput" name="estimate" type="number" required/>'
+    estimate_html3 = '</div><div class = "estimate"><input name="unit" type="radio" value = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters"><label for="meters"> Meters</label><br>'
     estimate_html4 = '</div></p>'
     
-    
-    
     var form_trial = {
-  type: 'survey-html-form',
-  //preamble: '<p> How are you feeling <b>right now?</b> </p>',
-  html: function(){
-      var temp_html = estimate_html1 + jsPsych.timelineVariable('estimate_type',true) + estimate_html2 + estimate_html3 + estimate_html4
-      return temp_html;
-  }
-};
+        type: 'survey-html-form',
+        on_load: function() {
+            document.getElementById("mynumberinput").focus();
+        },
+  
+        html: function(){
+            var temp_type = jsPsych.timelineVariable('estimate_type',true)
+            var temp_html = estimate_html1 + temp_type + estimate_html2;
+            if (temp_type == "Distance"){
+                temp_html += estimate_html3;
+            } else if (temp_type == "Orientation"){
+                temp_html += '&nbspdegrees';
+            } 
+            
+            temp_html += estimate_html4;
+            return temp_html;
+        }
+    };
     
 //stimulus: function(){
 //                var html="<img src='"+jsPsych.timelineVariable('face', true)+"'>";
@@ -376,17 +411,31 @@ document.addEventListener("DOMContentLoaded", function() {
 //            post_trial_gap: 1000
 //        };
 //        timeline.push(test_instructions);
-//        
+      
+    if (condition == "Toggle"){
         var test_procedure = {
+          timeline: [questionPrompt, loop_node, form_trial],
+          timeline_variables: test_stimuli,
+          randomize_order: true,
+          repetitions: 1,
+            sample: {
+                type: 'without-replacement',
+                size: ntrials,
+            }
+        }
+    } else {
+                    var test_procedure = {
           timeline: [questionPrompt, image, form_trial],
           timeline_variables: test_stimuli,
           randomize_order: true,
           repetitions: 1,
             sample: {
                 type: 'without-replacement',
-                size: 5,
+                size: ntrials,
             }
-        };
+        }
+    
+    };
         
         timeline.push(test_procedure);
 //        
@@ -455,8 +504,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 //$('.ui-tooltip').hide();
             },
             on_finish: function() {
+                
+        jsPsych.data.displayData();
+      
             //jsPsych.data.get().filter({test_part: 'test'}).ignore('stimulus').displayData('csv');
-            console.log(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());
+            //console.log(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());
             //submit(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());
             //if ("c_set" in variables && variables['c_set'].length > 0) {
             //  setConsumables("explainable_ai", variables['c_set'], consumable_condition);

@@ -43,6 +43,9 @@ document.addEventListener("DOMContentLoaded", function() {
         
     console.log("condition:", condition);
     
+    unitDefault = "meters";
+    unitChoices = ["meters", "feet"];
+    
     //use "/attachment/ to get image files in VS"
 //    var test_stimuli = [
 //      { stimulus: "WL_Stim_1.png"},
@@ -79,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function() {
     images = [];
     views = [];
     imagenames = ["SL","WL"];
-    ntrials = 2;
+    ntrials = 10;
     switch (condition){
         case "SL":
             views = jsPsych.randomization.sampleWithReplacement(["SL"],combos.length);
@@ -208,14 +211,35 @@ var loop_node = {
     
     estimate_html1 = '<p> <div class = "estimate">'
     estimate_html2 = ': <input id = "mynumberinput" name="estimate" type="number" required/>'
-    estimate_html3 = '</div><div class = "estimate"><input name="unit" type="radio" value = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters"><label for="meters"> Meters</label><br>'
+    estimate_html3 = '</div><div class = "estimate"><input name="unit" type="radio" value = "feet" id = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters" id="meters"><label for="meters"> Meters</label><br>'
     estimate_html4 = '</div></p>'
     
     var form_trial = {
         type: 'survey-html-form',
         on_load: function() {
             document.getElementById("mynumberinput").focus();
+//                          console.log(trial.data.estimate_type);
+//    if (trial.data.estimate_type == "Distance"){
+        radiobtn = document.getElementById(unitDefault);
+            if (radiobtn != null){
+                console.log(radiobtn);
+            radiobtn.checked = true;
+            }
+        
+//    }
+            
         },
+          on_start: function(trial){
+//              console.log(trial.data.estimate_type);
+//    if (trial.data.estimate_type == "Distance"){
+//        radiobtn = document.getElementById(unitDefault);
+//        console.log(radiobtn);
+//            radiobtn.checked = true;
+//    }
+    
+  },
+        
+                    
   
         html: function(){
             var temp_type = jsPsych.timelineVariable('estimate_type',true)
@@ -228,7 +252,15 @@ var loop_node = {
             
             temp_html += estimate_html4;
             return temp_html;
+        },
+        data: jsPsych.timelineVariable('data'),
+        on_finish: function(data){
+        if(data.estimate_type == "Distance"){
+            unitDefault = JSON.parse(data.responses).unit;
         }
+        
+//        trial.data.stimulus_type = 'incongruent';
+    }
     };
     
 //stimulus: function(){

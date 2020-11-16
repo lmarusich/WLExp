@@ -58,17 +58,16 @@ document.addEventListener("DOMContentLoaded", function() {
     //Need to assign a condition
     //Probably need to force full screen/ask mike what min pixel dimensions should be
     //should there be a maximum too? probably.
-    //limit text inputs to numbers, something about conditional timelines?
     //for distance estimates, need to figure out what the last unit selected was, and make that the default selection on the next trial
     //get data in the format we want
     //still need instructions
     //still need staircase procedure
-    //still need toggle condition
-    
+    //for toggle condition, need to aggregate the time spent in each view, number of switches, final view
+    //maybe give them the negative on the orientation?
     
     allvars = {
         distances: [5,25,50,75,100,150,200],
-        orientations: [0,10,20,30],
+        orientations: [0,-10,-20,-30],
         numbers: [1,3,6],
         estimate_types: ["Distance", "Orientation", "Number"]
     }
@@ -78,189 +77,62 @@ document.addEventListener("DOMContentLoaded", function() {
     nunique = combos.length/3
     
     images = [];
+    views = [];
     imagenames = ["SL","WL"];
     ntrials = 2;
     switch (condition){
         case "SL":
-            images = jsPsych.randomization.sampleWithReplacement(["SL.PNG"],2);
-            for (var i = 0; i < nunique; i++) {
+            views = jsPsych.randomization.sampleWithReplacement(["SL"],combos.length);
+            for (var i = 0; i < combos.length; i++) {
                 //images.push("SL" + combos[i].distances + combos[i].orientations + combos[i].numbers + ".PNG");
-                tempstr = "SL" + combos[i].distances + combos[i].orientations + combos[i].numbers + ".PNG";
+                //tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_" + "sl.png";
+                tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.png";
+                images.push("WL_SL Stimuli Images/" + tempstr);
+                
             }
-    //                practice_stims = practice_census;
-    //                definitions = census_definitions;
-    //                response_choices = ['Less than 88K', 'More than 88K'];
-    //                instructions = census_instructions;
+            
             break;
         case "WL":
-            images = jsPsych.randomization.sampleWithReplacement(["WL.PNG"],ntrials);
-    //                practice_stims = practice_compas;
-    //                definitions = compas_definitions;
-    //                response_choices = ['Will Not Re-offend', 'Will Re-offend'];
-    //                instructions = compas_instructions;
+            views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
+            for (var i = 0; i < nunique; i++) {    
+                tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.png";
+                images.push("WL_SL Stimuli Images/" + tempstr);
+            }
+
             break;
         case "Toggle":
-            images = jsPsych.randomization.sampleWithReplacement(["SL.PNG","WL.PNG"],ntrials);
+            firstviews = jsPsych.randomization.sampleWithReplacement(["_sl.png","_wl.png"],combos.length);
+            for (var i = 0; i < nunique; i++) {    
+                tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
+                console.log(tempstr);
+                images.push("WL_SL Stimuli Images/" + tempstr);
+                if (firstviews[i] == "_sl.png"){
+                    views.push("SL")
+                } else {
+                    views.push("WL")
+                }    
+            }
+            
     }
     // }
     test_stimuli = [];
             for (var i = 0; i < images.length; i++) {
-                //tempstr = condition + combos[i].distances + combos[i].orientations + combos[i].numbers + ".PNG";
-                //test_stimuli.push({stimulus: tempstr})
                 test_stimuli.push({
                     stimulus: images[i],
-                    distance: combos[i].distances,
-                    orientation: combos[i].orientations,
-                    number: combos[i].numbers,
-                    estimate_type: combos[i].estimate_types
+                    estimate_type: combos[i].estimate_types,
+                    data: {view: views[i], distance: combos[i].distances, orientation: combos[i].orientations,
+                    number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0}
                 });
         }
     
     
-
     
-//        
-//        var predictors = Object.keys(definitions);
-//        var names = [];
-//
-//        var tableheader = "<table class = 'absolute', border='1'><tr>";
-//        for (var x in predictors){
-//            tableheader += "<th title = '" + definitions[predictors[x]] + "'>" + predictors[x] + " <span style = 'font-weight:normal'>&#9432</span></th>";
-//        }
-//        tableheader += "</tr>";
-//        
-//        function createStimuli(stim, type) {
-//            var tempstimuli = tableheader + "<tr>";
-//            var names = Object.keys(stim);
-//            skipvars = Object.keys(stim[names[0]][0]).splice(- 2,2);
-//            //for (var x = 0; x < nvars; x++) {
-//            for (x in stim[names[0]][0]){
-//                if (skipvars.includes(x)){
-//                    continue;
-//                }
-//                
-//                if (stim[names[0]][0][x] === "?"){
-//                    tempstimuli += "<td>Unknown</td>";
-//                } else {
-//                    tempstimuli += "<td>" + stim[names[0]][0][x] + "</td>";
-//                }
-//            } 
-//            tempstimuli += "</table><br>";
-//            
-//            if (type === "example"){
-//                tempstim = [];
-//                tempstim.push(tempstimuli, tempstimuli, tempstimuli);
-//            };
-//            
-//
-//
-//            if (condition != "Control"){
-//                //add AI Prediction
-//                tempstimuli += "<p><strong>AI Predicts: </strong>" + stim[names[0]][0].prediction + "</p><br>";
-//                if (type === "example"){tempstim[1] = tempstimuli; tempstim[2] = tempstimuli;}
-//                if (condition == "AI_expl"){
-//                    //add AI Explanation
-//                    tempstimuli += "<strong>AI Explanation: </strong><div class = 'parent'><ul>";
-//                    var tempexpl = stim[names[1]][0];
-//                    var counter = 0;
-//                    for (var x in tempexpl) {
-//                        
-//                        if ((x === "class") || (tempexpl[x].length == 0)){
-//                            continue;
-//                        }
-//                        
-//                        if (counter > 0){
-//                            tempstimuli += ", <span style = 'font-size:67%'>AND</span></li>";
-//                        }
-//                        tempstimuli += "<li>" + x + ": " + tempexpl[x];
-//                        counter++;
-//                    } 
-//                    tempstimuli += "</li></ul></div><p> </p>"
-//                    
-//                    if (type === "example"){
-//                        tempstim[2] = tempstimuli;
-//                        
-//                    }
-//                }
-//            }
-//            
-//            if (type === "example"){return tempstim;}
-//            
-//            tempobj = {};
-//            tempobj['stimulus'] = tempstimuli;
-//            tempobj['data'] = {test_part: type, correct_response: stim.cr, stimindex: stim.index, AI_corr: stim.AI_corr, dataset: dataset, condition: condition};
-//
-//            return tempobj
-//        }
-//        
-//        //create one example
-//        var example_stimulus = createStimuli(practice_stims[1], 'example');
-//        
-//        //should be 10 practice trials
-//        var practice_stimuli = [];
-//        for (var i = 0; i < practice_stims.length; i++) {
-//            practice_stimuli.push(createStimuli(practice_stims[i], 'practice'));
-//        }
-//
-//        // should be 100 trials
-//        var test_stimuli = [];
-//        for (var i = 0; i < dataset_stims.length; i++) {
-//            test_stimuli.push(createStimuli(dataset_stims[i], 'test'));
-//        }
 //
 //        /* create timeline */
         var timeline = []; 
 //        
 //
-//        var instructionset1 = {
-//            type: "html-button-response",
-//            choices: ["Next"],
-//            post_trial_gap: 0,
-//            timeline: [
-//                {stimulus: consent, choices: ["I agree"]},
-//                {stimulus: instructions[0], post_trial_gap: 500},
-//                {stimulus: instructions[1], post_trial_gap: 500},
-//                {stimulus: example_stimulus[0]},
-//                {stimulus: example_stimulus[0] + "<p>Here is the information for one person</p><p>Note that you can hover over the name of each variable to see its definition again</p>"}
-//            ]
-//        }
-//        timeline.push(instructionset1);
-//                    
-//        if (condition != "Control"){           
-//            var instructai = {
-//                type: "html-button-response",
-//                choices: ["Next"],
-//                post_trial_gap: 0,
-//                timeline: [
-//                    {stimulus: example_stimulus[0] + ai_instructions},
-//                    {stimulus: example_stimulus[1]}
-//                ]
-//            };
-//            timeline.push(instructai);    
-//        }
-//        
-//        if (condition === "AI_expl"){    
-//            var instructexpl1 = {            
-//                type: "html-button-response",
-//                choices: ["Next"],
-//                post_trial_gap: 0,
-//                timeline: [
-//                    {stimulus: example_stimulus[1] + aiexpl_instructions},
-//                    {stimulus: example_stimulus[2]}
-//                ]
-//            };
-//            timeline.push(instructexpl1);        
-//        }
-//        
-//        var instructionset2 = {
-//            type: "html-button-response",
-//            post_trial_gap: 1000,
-//            timeline: [
-//                {stimulus: example_stimulus[2] + instructions[2], choices: response_choices},
-//                {stimulus: "<p>" + prac_instructions + "</p>", choices: ["Next"]}
-//            ]
-//        };
-//        timeline.push(instructionset2);
+
 //        
         var questionPrompt = {
           type: "html-keyboard-response",
@@ -281,24 +153,38 @@ document.addEventListener("DOMContentLoaded", function() {
           };
     
     var toggle_image = {
+        on_start: function(trial){
+        if (jsPsych.data.get().last(1).values()[0].view == "WL"){
+            trial.stimulus = trial.stimulus.replace("wl", "sl");
+//            var tempswitches = trial.data.nswitches
+//            console.log(tempswitches, tempswitches+1);
+            trial.data = {view: "SL", nswitches: nswitches};
+            
+        } else if (jsPsych.data.get().last(1).values()[0].view == "SL"){
+            trial.stimulus = trial.stimulus.replace("sl", "wl");
+//            var tempswitches = trial.data.nswitches
+            trial.data = {view: "WL", nswitches: nswitches};
+        }
+    },
         type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Toggle View", "Ready"],
-          post_trial_gap: 500
+          post_trial_gap: 500,
+        data: jsPsych.timelineVariable('data')
         
     }
     
-    
+var nswitches = 0;    
     
 var loop_node = {
-    on_start: function(trial){
-        //console.log(trial.stimulus);
-        if (jsPsych.data.get().last(1).values()[0].stimulus == "WL.PNG"){
-            console.log("toggled!");
-        }
-//        trial.data.stimulus_type = 'incongruent';
-    },
-//    on_finish: function(trial){
+//    on_start: function(trial){
+//        console.log(jsPsych.data.get().last(1).values()[0].view == "WL");
+//        if (jsPsych.data.get().last(1).values()[0].view == "WL"){
+//            console.log("last was WL");
+//            console.log(trial.stimulus);
+//        }
+//    },
+//    on_finish: function(data){
 //        if(data.values()[0].button_pressed == 0){
 //            console.log(trial.stimulus);
 //        }
@@ -309,10 +195,12 @@ var loop_node = {
     loop_function: function(data){
         if(data.values()[0].button_pressed == 0){
 //            console.log(data.values()[0].stimulus)
-//            console.log(trial.stimulus);
+            nswitches++;
+            console.log(nswitches);
 //            stimulus: "SL.PNG";
             return true;
         } else {
+            nswitches = 0;
             return false;
         }
     }

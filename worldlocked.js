@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function() {
     //still need staircase procedure
     //for toggle condition, need to aggregate the time spent in each view, number of switches, final view
     //maybe give them the negative on the orientation?
+    //need to balance toggle starting views
     
     allvars = {
         distances: [5,25,50,75,100,150,200],
@@ -83,6 +84,7 @@ document.addEventListener("DOMContentLoaded", function() {
     views = [];
     imagenames = ["SL","WL"];
     ntrials = 10;
+    instructions = "<p>In today's task, you will view an image of a park with virtual icons to indicate the location of hypothetical team mates.</p><p>"
     switch (condition){
         case "SL":
             views = jsPsych.randomization.sampleWithReplacement(["SL"],combos.length);
@@ -92,8 +94,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.png";
                 images.push("WL_SL Stimuli Images/" + tempstr);
                 
+                    
+                
             }
-            
+            instructions +=  "These icons will appear on a mini-map visible within the image." 
             break;
         case "WL":
             views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
@@ -101,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.png";
                 images.push("WL_SL Stimuli Images/" + tempstr);
             }
-
+instructions +=  "These icons will appear in the image at the location of your team mate."
             break;
         case "Toggle":
             firstviews = jsPsych.randomization.sampleWithReplacement(["_sl.png","_wl.png"],combos.length);
@@ -117,6 +121,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             
     }
+    
+    instructions += "</p><p>In this experiment you will be asked to estimate the distance to the average location of the icons, estimate the heading (from your location) to the average location of the icons, or identify how many icons are visible.</p>"
     // }
     test_stimuli = [];
             for (var i = 0; i < images.length; i++) {
@@ -135,6 +141,22 @@ document.addEventListener("DOMContentLoaded", function() {
         var timeline = []; 
 //        
 //
+
+
+    
+    var instructionset1 = {
+        type: "html-button-response",
+        choices: ["Next"],
+        post_trial_gap: 500,
+        timeline: [
+//            {stimulus: consent, choices: ["I agree"]},
+            {stimulus: instructions}
+//            {stimulus: instructions[1], post_trial_gap: 500},
+//            {stimulus: example_stimulus[0]},
+//            {stimulus: example_stimulus[0] + "<p>Here is the information for one person</p><p>Note that you can hover over the name of each variable to see its definition again</p>"}
+        ]
+    }
+        timeline.push(instructionset1);
 
 //        
         var questionPrompt = {

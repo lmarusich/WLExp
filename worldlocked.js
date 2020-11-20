@@ -130,18 +130,23 @@ document.addEventListener("DOMContentLoaded", function() {
     instructions += "</p><p>In this experiment you will be asked to estimate the distance to the average location of the icons, estimate the heading (from your location) to the average location of the icons, or identify how many icons are visible.</p>"
     // }
     test_stimuli = [];
-            for (var i = 0; i < images.length; i++) {
-                test_stimuli.push({
-                    stimulus: images[i],
-                    estimate_type: combos[i].estimate_types,
-                    data: {view: views[i], distance: combos[i].distances, orientation: combos[i].orientations,
-                    number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0}
-                });
+    for (var i = 0; i < images.length; i++) {
+        if (condition == "Toggle"){
+            test_stimuli.push({
+                stimulus: images[i],
+                estimate_type: combos[i].estimate_types,
+                data: {condition: condition, view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, firstview: "", lastview: ""}
+            })
+        } else {
+            test_stimuli.push({
+                stimulus: images[i],
+                estimate_type: combos[i].estimate_types,
+                data: {view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, firstview: views[i], lastview: views[i]}
+            })
         }
-    
-    
-    
-//
+    }
+                
+
 //        /* create timeline */
         var timeline = []; 
 //        
@@ -204,7 +209,18 @@ var if_node = {
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Ready"],
           post_trial_gap: 500,
-            data: jsPsych.timelineVariable('data')
+            data: jsPsych.timelineVariable('data'),
+            on_finish: function(data){
+                if (data.view == "WL"){
+                    time_in_WL += data.rt;
+                } else {
+                    time_in_SL += data.rt;
+                }
+
+                console.log("time in WL: " + time_in_WL);
+                console.log("time in SL: " + time_in_SL);
+                
+            },
           };
  
     var nswitches = 0;
@@ -239,14 +255,6 @@ var if_node = {
             console.log("time in WL: " + time_in_WL);
             console.log("time in SL: " + time_in_SL);
                 
-    
-//            } else if (jsPsych.data.get().last(1).values()[0].view == "SL"){
-//                trial.stimulus = trial.stimulus.replace("sl", "wl");
-//    //            var tempswitches = trial.data.nswitches
-//                trial.data = {view: "WL", nswitches: nswitches};
-//            } else {
-//                firstview = trial.data.view;
-//            }
         },
         type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
@@ -256,8 +264,6 @@ var if_node = {
         
     }
         
-    
-
     
     var loop_node = {
 
@@ -318,21 +324,27 @@ var if_node = {
                 //var toggled_data = jsPsych.data.get().last(nswitches + 1);
                 //console.log(toggled_data.csv());
                 //console.log(jsPsych.data.getLastTimelineData().csv());
-                data.nswitches = nswitches;
-                nswitches = 0;
+                
                 data.firstview = firstview;
                 data.lastview = lastview;
-                data.time_in_WL = time_in_WL;
+                
+//            } else if(condition == "WL"){
+//                data.time_in_WL = time_in_WL;
+//            } else {
+//                data.time_in_SL = time_in_SL;
+            }
+            
+            data.nswitches = nswitches;
+            nswitches = 0;
+            data.time_in_WL = time_in_WL;
                 data.time_in_SL = time_in_SL;
                 time_in_SL = 0;
                 time_in_WL = 0;
-            }
         
             if(data.estimate_type == "Distance"){
                 unitDefault = JSON.parse(data.responses).unit;
             }
         
-
         }
     };
     
@@ -351,7 +363,7 @@ var if_node = {
         }
     } else {
         
-                    var test_procedure = {
+        var test_procedure = {
           timeline: [questionPrompt, image, form_trial],
           timeline_variables: test_stimuli,
           randomize_order: true,
@@ -371,15 +383,14 @@ var if_node = {
             timeline: timeline,
             preload_images: images,
               exclusions: {
-    min_width: 1000,
-    min_height: 600
-  },
-            on_trial_start: function() {
-                //$('.ui-tooltip').hide();
-            },
+                min_width: 1000,
+                min_height: 600
+              },
+ 
             on_finish: function() {
                 
-        jsPsych.data.displayData();
+        //jsPsych.data.displayData();
+                jsPsych.data.get().filter({trial_type: 'survey-html-form'}).ignore(['trial_type','trial_index','time_elapsed,','internal_node_id']).localSave('csv');
       
             //console.log(jsPsych.data.get().filter({trial_type: 'image-button-response'}).csv());
             //console.log(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());

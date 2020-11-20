@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function() {
     images = [];
     views = [];
    
-    ntrials = 2;
+    ntrials = 10;
     instructions = "<p>In today's task, you will view an image of a park with virtual icons to indicate the location of hypothetical team mates.</p><p>"
     switch (condition){
         case "SL":

@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", function() {
     //Need to assign a condition
     //Probably need to force full screen/ask mike what min pixel dimensions should be
     //should there be a maximum too? probably.
-    //for distance estimates, need to figure out what the last unit selected was, and make that the default selection on the next trial
     //get data in the format we want
     //still need instructions
     //still need staircase procedure
@@ -82,8 +81,8 @@ document.addEventListener("DOMContentLoaded", function() {
     
     images = [];
     views = [];
-    imagenames = ["SL","WL"];
-    ntrials = 10;
+   
+    ntrials = 2;
     instructions = "<p>In today's task, you will view an image of a park with virtual icons to indicate the location of hypothetical team mates.</p><p>"
     switch (condition){
         case "SL":
@@ -98,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 
             }
             instructions +=  "These icons will appear on a mini-map visible within the image." 
+            instruct_image = "SL.PNG"
             break;
         case "WL":
             views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
@@ -105,10 +105,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.png";
                 images.push("WL_SL Stimuli Images/" + tempstr);
             }
-instructions +=  "These icons will appear in the image at the location of your team mate."
+            instructions +=  "These icons will appear in the image at the location of your team mate."
+            instruct_image = "WL.PNG"
             break;
         case "Toggle":
-            firstviews = jsPsych.randomization.sampleWithReplacement(["_sl.png","_wl.png"],combos.length);
+            var firstviews1 = jsPsych.randomization.sampleWithReplacement(["_sl.png"], combos.length/2)
+            var firstviews2 = jsPsych.randomization.sampleWithReplacement(["_wl.png"], combos.length/2)
+            firstviews = jsPsych.randomization.sampleWithoutReplacement(firstviews1.concat(firstviews2),combos.length)
+//            firstviews.push(jsPsych.randomization.sampleWithReplacement(["_wl.png"],combos.length/2));
             for (var i = 0; i < nunique; i++) {    
                 tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
                 console.log(tempstr);
@@ -119,7 +123,8 @@ instructions +=  "These icons will appear in the image at the location of your t
                     views.push("WL")
                 }    
             }
-            
+            instructions +=  "You can choose whether these icons appear in the image at the location of your team mate, or on a mini-map visible within the image." 
+            instruct_image = jsPsych.randomization.sampleWithReplacement(["SL.PNG","WL.PNG"],1);
     }
     
     instructions += "</p><p>In this experiment you will be asked to estimate the distance to the average location of the icons, estimate the heading (from your location) to the average location of the icons, or identify how many icons are visible.</p>"
@@ -141,24 +146,48 @@ instructions +=  "These icons will appear in the image at the location of your t
         var timeline = []; 
 //        
 //
+var skipinstructions = {
+    type: 'html-button-response',
+    stimulus: 'Just for testing: Skip instructions?',
+    choices: ['yes','no']
+}    
+timeline.push(skipinstructions);
+var instructionset1 = {
+    type: 'instructions',
+    pages: [
+        instructions,
+        '<img src=' + instruct_image + '></img>',
+         'To estimate distances, enter the distance (in any metric you feel comfortable) into the text-field. Please indicate which metric you are using by selecting the metric in the drop-down menu. If multiple icons are visible, please indicate the average distance to the icons.',
+        'image with 2 icons and 10m distance indicated',
+        'To help you calibrate distances in the image, you will see a flag located 10m from your location. Please estimate the average distance to the two targets.<br><br><div class = "estimate">Distance: <input id = "mynumberinput" name="estimate" type="number" required/></div><div class = "estimate"><input name="unit" type="radio" value = "feet" id = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters" id="meters"><label for="meters"> Meters</label></div><br>',
+        'The actual distance was 20m (translate to other units?)',
+        'To estimate heading, enter your response, in degrees, into the text field. If multiple icons are visible, please enter the average heading of the icons.',
+        'image with 2 icons and orientation lines',
+        'To help calibrate headings, we are displaying a line that indicates 0 degrees (or straight ahead) and one indicating 10 degrees to the left. Please practice estimating the heading to the two visible targets',
+        'To estimate the quantity of icons, please enter the number of icons you see',
+        'Image with 2 icons (same as above',
+        'Allow participants to enter estimate, provide “2” for feedback'
+    ],
+    show_clickable_nav: true
+}
 
-
-    
-    var instructionset1 = {
-        type: "html-button-response",
-        choices: ["Next"],
-        post_trial_gap: 500,
-        timeline: [
-//            {stimulus: consent, choices: ["I agree"]},
-            {stimulus: instructions}
-//            {stimulus: instructions[1], post_trial_gap: 500},
-//            {stimulus: example_stimulus[0]},
-//            {stimulus: example_stimulus[0] + "<p>Here is the information for one person</p><p>Note that you can hover over the name of each variable to see its definition again</p>"}
-        ]
+var if_node = {
+    timeline: [instructionset1],
+    conditional_function: function(){
+        // get the data from the previous trial,
+        // and check which key was pressed
+        var data = jsPsych.data.get().last(1).values()[0];
+        if(data.button_pressed == 0){
+            return false;
+        } else {
+            return true;
+        }
     }
-        timeline.push(instructionset1);
-
-//        
+}
+    
+    timeline.push(if_node);
+    
+        
         var questionPrompt = {
           type: "html-keyboard-response",
           stimulus: function(){
@@ -174,23 +203,51 @@ instructions +=  "These icons will appear in the image at the location of your t
           type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Ready"],
-          post_trial_gap: 500
+          post_trial_gap: 500,
+            data: jsPsych.timelineVariable('data')
           };
+ 
+    var nswitches = 0;
+    var firstview = "?";
+    var lastview = "?";
+    var time_in_SL = 0;
+    var time_in_WL = 0;
     
     var toggle_image = {
         on_start: function(trial){
-        if (jsPsych.data.get().last(1).values()[0].view == "WL"){
-            trial.stimulus = trial.stimulus.replace("wl", "sl");
-//            var tempswitches = trial.data.nswitches
-//            console.log(tempswitches, tempswitches+1);
-            trial.data = {view: "SL", nswitches: nswitches};
-            
-        } else if (jsPsych.data.get().last(1).values()[0].view == "SL"){
-            trial.stimulus = trial.stimulus.replace("sl", "wl");
-//            var tempswitches = trial.data.nswitches
-            trial.data = {view: "WL", nswitches: nswitches};
-        }
-    },
+            if (jsPsych.data.get().last(1).values()[0].view == "WL"){
+                trial.stimulus = trial.stimulus.replace("wl", "sl");
+    //            var tempswitches = trial.data.nswitches
+    //            console.log(tempswitches, tempswitches+1);
+                trial.data = {view: "SL", nswitches: nswitches};
+
+            } else if (jsPsych.data.get().last(1).values()[0].view == "SL"){
+                trial.stimulus = trial.stimulus.replace("sl", "wl");
+    //            var tempswitches = trial.data.nswitches
+                trial.data = {view: "WL", nswitches: nswitches};
+            } else {
+                firstview = trial.data.view;
+            }
+        },
+        
+        on_finish: function(data){
+            if (data.view == "WL"){
+                time_in_WL += data.rt;
+            } else {
+                time_in_SL += data.rt;
+            }
+            console.log("time in WL: " + time_in_WL);
+            console.log("time in SL: " + time_in_SL);
+                
+    
+//            } else if (jsPsych.data.get().last(1).values()[0].view == "SL"){
+//                trial.stimulus = trial.stimulus.replace("sl", "wl");
+//    //            var tempswitches = trial.data.nswitches
+//                trial.data = {view: "WL", nswitches: nswitches};
+//            } else {
+//                firstview = trial.data.view;
+//            }
+        },
         type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Toggle View", "Ready"],
@@ -198,38 +255,31 @@ instructions +=  "These icons will appear in the image at the location of your t
         data: jsPsych.timelineVariable('data')
         
     }
+        
     
-var nswitches = 0;    
+
     
-var loop_node = {
-//    on_start: function(trial){
-//        console.log(jsPsych.data.get().last(1).values()[0].view == "WL");
-//        if (jsPsych.data.get().last(1).values()[0].view == "WL"){
-//            console.log("last was WL");
-//            console.log(trial.stimulus);
-//        }
-//    },
-//    on_finish: function(data){
-//        if(data.values()[0].button_pressed == 0){
-//            console.log(trial.stimulus);
-//        }
-//        
-////        trial.data.stimulus_type = 'incongruent';
-//    },
-    timeline: [toggle_image],
-    loop_function: function(data){
-        if(data.values()[0].button_pressed == 0){
-//            console.log(data.values()[0].stimulus)
-            nswitches++;
-            console.log(nswitches);
-//            stimulus: "SL.PNG";
-            return true;
-        } else {
-            nswitches = 0;
-            return false;
+    var loop_node = {
+
+        timeline: [toggle_image],
+        loop_function: function(data){
+            if(data.values()[0].button_pressed == 0){
+    //            console.log(data.values()[0].stimulus)
+                nswitches++;
+                console.log(nswitches);
+
+                return true;
+            } else {
+//                console.log(nswitches);
+//                console.log(firstview);
+                lastview = jsPsych.data.get().last(1).values()[0].view;
+//                console.log(lastview);
+                var toggled_data = jsPsych.data.get().last(nswitches + 1);
+                    console.log(toggled_data.csv());
+                return false;
+            }
         }
     }
-}
     
     estimate_html1 = '<p> <div class = "estimate">'
     estimate_html2 = ': <input id = "mynumberinput" name="estimate" type="number" required/>'
@@ -240,29 +290,14 @@ var loop_node = {
         type: 'survey-html-form',
         on_load: function() {
             document.getElementById("mynumberinput").focus();
-//                          console.log(trial.data.estimate_type);
-//    if (trial.data.estimate_type == "Distance"){
-        radiobtn = document.getElementById(unitDefault);
-            if (radiobtn != null){
-                console.log(radiobtn);
-            radiobtn.checked = true;
-            }
-        
-//    }
-            
+
+            radiobtn = document.getElementById(unitDefault);
+                if (radiobtn != null){
+                    console.log(radiobtn);
+                radiobtn.checked = true;
+                }
         },
-          on_start: function(trial){
-//              console.log(trial.data.estimate_type);
-//    if (trial.data.estimate_type == "Distance"){
-//        radiobtn = document.getElementById(unitDefault);
-//        console.log(radiobtn);
-//            radiobtn.checked = true;
-//    }
     
-  },
-        
-                    
-  
         html: function(){
             var temp_type = jsPsych.timelineVariable('estimate_type',true)
             var temp_html = estimate_html1 + temp_type + estimate_html2;
@@ -275,85 +310,34 @@ var loop_node = {
             temp_html += estimate_html4;
             return temp_html;
         },
+        
         data: jsPsych.timelineVariable('data'),
         on_finish: function(data){
-        if(data.estimate_type == "Distance"){
-            unitDefault = JSON.parse(data.responses).unit;
-        }
+            if(condition == "Toggle"){
+                //console.log(nswitches);
+                //var toggled_data = jsPsych.data.get().last(nswitches + 1);
+                //console.log(toggled_data.csv());
+                //console.log(jsPsych.data.getLastTimelineData().csv());
+                data.nswitches = nswitches;
+                nswitches = 0;
+                data.firstview = firstview;
+                data.lastview = lastview;
+                data.time_in_WL = time_in_WL;
+                data.time_in_SL = time_in_SL;
+                time_in_SL = 0;
+                time_in_WL = 0;
+            }
         
-//        trial.data.stimulus_type = 'incongruent';
-    }
+            if(data.estimate_type == "Distance"){
+                unitDefault = JSON.parse(data.responses).unit;
+            }
+        
+
+        }
     };
     
-//stimulus: function(){
-//                var html="<img src='"+jsPsych.timelineVariable('face', true)+"'>";
-//                html += "<p>"+jsPsych.timelineVariable('name', true)+"</p>";
-//                return html;
-//            },  
-    
-//            var questionPrompt = {
-//          type: "html-keyboard-response",
-//          stimulus: jsPsych.timelineVariable('stimulus'),
-//          choices: response_choices,
-//          data: jsPsych.timelineVariable('data'),
-//          on_finish: function(data){
-//            data.correct = data.button_pressed == (data.correct_response);
-//          }
-//        };
-////        
-//          var scale = ["No Confidence (Guessing)", "Low Confidence", "Moderate Confidence", "High Confidence", "Full Confidence (Certain)"];
-//
-//          var likert_trial = {
-//              type: 'survey-likert',
-//              questions: [
-//                {prompt: "How confident were you in your answer?", name: 'Confidence', labels: scale, required: true}
-//              ],
-//              preamble: function(){
-//                  var last_trial_stim = jsPsych.data.get().last(1).values()[0].stimulus;
-//                  var last_trial_answer = jsPsych.data.get().last(1).values()[0].button_pressed;
-//                  return last_trial_stim + "<p>Your Answer: " + response_choices[last_trial_answer] + "</p>";
-//              },
-//              scale_width: 750,
-//              data: {test_part: 'confidence'}
-//          };
-//        
-//        var feedback = {
-//          type: 'html-keyboard-response',
-//          stimulus: function(){
-//            var last_trial_stim = jsPsych.data.get().last(2).values()[0].stimulus;
-//            var last_trial_answer = jsPsych.data.get().last(2).values()[0].button_pressed;
-//            var last_trial_correct = jsPsych.data.get().last(2).values()[0].correct;
-//            if(last_trial_correct){
-//              return last_trial_stim + "<p class = 'correct'>Your Answer: " + response_choices[last_trial_answer] + "</p><p class = 'correct'>Correct!</p>";
-//            } else {
-//              return last_trial_stim + "<p class = 'incorrect'>Your Answer: " + response_choices[last_trial_answer] + "<p class = 'incorrect'>Wrong.</p>";
-//            }
-//          },
-//          choices: jsPsych.NO_KEYS,
-//          trial_duration: 3000,
-//          post_trial_gap: 500,
-//          data: {test_part: 'feedback'}
-//        }
-//        
-//        var practice_procedure = {
-//            timeline: [test, likert_trial, feedback],
-//            timeline_variables: practice_stimuli,
-//            randomize_order: true,
-//            repetitions: 1,
-//            sample: {
-//                type: 'without-replacement',
-//                size: 10,
-//            } 
-//        };
-//        timeline.push(practice_procedure);
-//        
-//        var test_instructions = {
-//            type: "html-keyboard-response",
-//            stimulus: "<p>" + instructions6 + "</p>",
-//            post_trial_gap: 1000
-//        };
-//        timeline.push(test_instructions);
-      
+
+
     if (condition == "Toggle"){
         var test_procedure = {
           timeline: [questionPrompt, loop_node, form_trial],
@@ -366,6 +350,7 @@ var loop_node = {
             }
         }
     } else {
+        
                     var test_procedure = {
           timeline: [questionPrompt, image, form_trial],
           timeline_variables: test_stimuli,
@@ -378,61 +363,8 @@ var loop_node = {
         }
     
     };
-        
         timeline.push(test_procedure);
-//        
-//        var age_options = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
-//        var gender_options = ["Male", "Female"];
-//        var edu_options = ["Less than high school degree", "High school degree or equivalent (e.g., GED)", "Some college but no degree", "Associate degree", "Bachelor degree", "Graduate degree"];
-//
-//        
-//        var demographics = {
-//            type: "survey-multi-choice",
-//            questions: [
-//                {prompt: "How old are you?", name: 'Age', options: age_options, required:true}, 
-//                {prompt: "What is your gender?", name: 'Gender', options: gender_options, required: true},
-//                {prompt: "What is the highest level of education you have completed?", name: 'Edu', options: edu_options, required: true}
-//            ],
-//            data: {test_part: 'demographics'}
-//        };
-//        timeline.push(demographics);
-//        
-//        var freeresponse = {
-//            type: "survey-text",
-//            questions: [
-//                {prompt: 'What strategies did you use to make classifications in this task?', placeholder: 'I tended to...', rows:10, columns: 50}
-//            ],
-//            data: {test_part: 'freeresponse'}
-//        }
-//        timeline.push(freeresponse);
-//
-//        
-//        var debrief_block = {
-//          type: "html-keyboard-response",
-//          stimulus: function() {
-//
-//            var trials = jsPsych.data.get().filter({test_part: 'test'});
-//            var correct_trials = trials.filter({correct: true});
-//            var accuracy = Math.round(correct_trials.count() / trials.count() * 100);
-//            var rt = Math.round(correct_trials.select('rt').mean());
-//
-//            return "<p>You responded correctly on "+accuracy+"% of the trials.</p>"+
-//            "<p>Your average response time was "+rt+"ms.</p>"+
-//            "<p>Press any key to complete the experiment. Thank you!</p>";
-//
-//          }
-//        };
-//
-//        //timeline.push(debrief_block);
-//        
-//        /* define debrief trial */
-//        var debriefscreen = {
-//            type: "html-button-response",
-//            stimulus: debrief,
-//            choices: ["Finished"]
-//        };
-//        timeline.push(debriefscreen);
-//
+
 //        
         jsPsych.init({
             // display_element: "explainable_ai",
@@ -449,7 +381,7 @@ var loop_node = {
                 
         jsPsych.data.displayData();
       
-            //jsPsych.data.get().filter({test_part: 'test'}).ignore('stimulus').displayData('csv');
+            //console.log(jsPsych.data.get().filter({trial_type: 'image-button-response'}).csv());
             //console.log(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());
             //submit(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());
             //if ("c_set" in variables && variables['c_set'].length > 0) {

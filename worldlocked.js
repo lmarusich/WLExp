@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
     //need to balance toggle starting views
     
     allvars = {
-        distances: [5,25,50,75,100,150,200],
+        distances: [15,25,50,75,100,150,200],
         orientations: [0,-10,-20,-30],
         numbers: [1,3,6],
         estimate_types: ["Distance", "Orientation", "Number"]
@@ -88,13 +88,8 @@ document.addEventListener("DOMContentLoaded", function() {
         case "SL":
             views = jsPsych.randomization.sampleWithReplacement(["SL"],combos.length);
             for (var i = 0; i < combos.length; i++) {
-                //images.push("SL" + combos[i].distances + combos[i].orientations + combos[i].numbers + ".PNG");
-                //tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_" + "sl.png";
-                tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.png";
-                images.push("WL_SL Stimuli Images/" + tempstr);
-                
-                    
-                
+                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.png";
+                images.push("WL_SL Stimuli Images Complete/" + tempstr);    
             }
             instructions +=  "These icons will appear on a mini-map visible within the image." 
             instruct_image = "SL.PNG"
@@ -102,8 +97,8 @@ document.addEventListener("DOMContentLoaded", function() {
         case "WL":
             views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
             for (var i = 0; i < nunique; i++) {    
-                tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.png";
-                images.push("WL_SL Stimuli Images/" + tempstr);
+                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.png";
+                images.push("WL_SL Stimuli Images Complete/" + tempstr);
             }
             instructions +=  "These icons will appear in the image at the location of your team mate."
             instruct_image = "WL.PNG"
@@ -114,9 +109,9 @@ document.addEventListener("DOMContentLoaded", function() {
             firstviews = jsPsych.randomization.sampleWithoutReplacement(firstviews1.concat(firstviews2),combos.length)
 //            firstviews.push(jsPsych.randomization.sampleWithReplacement(["_wl.png"],combos.length/2));
             for (var i = 0; i < nunique; i++) {    
-                tempstr = 6 + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
+                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
                 console.log(tempstr);
-                images.push("WL_SL Stimuli Images/" + tempstr);
+                images.push("WL_SL Stimuli Images Complete/" + tempstr);
                 if (firstviews[i] == "_sl.png"){
                     views.push("SL")
                 } else {
@@ -208,7 +203,7 @@ var if_node = {
           type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Ready"],
-          post_trial_gap: 500,
+          post_trial_gap: 250,
             data: jsPsych.timelineVariable('data'),
             on_finish: function(data){
                 if (data.view == "WL"){
@@ -259,7 +254,7 @@ var if_node = {
         type: "image-button-response",
           stimulus: jsPsych.timelineVariable('stimulus'),
           choices: ["Toggle View", "Ready"],
-          post_trial_gap: 500,
+          post_trial_gap: 250,
         data: jsPsych.timelineVariable('data')
         
     }
@@ -294,6 +289,7 @@ var if_node = {
     
     var form_trial = {
         type: 'survey-html-form',
+        post_trial_gap: 500,
         on_load: function() {
             document.getElementById("mynumberinput").focus();
 

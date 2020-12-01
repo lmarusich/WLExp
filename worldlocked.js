@@ -66,7 +66,8 @@ document.addEventListener("DOMContentLoaded", function() {
     //still need staircase procedure
     //for toggle condition, need to aggregate the time spent in each view, number of switches, final view
     //maybe give them the negative on the orientation?
-    //need to balance toggle starting views
+    //add demographics collection
+    
     
     allvars = {
         distances: [15,25,50,75,100,150,200],
@@ -372,6 +373,24 @@ var if_node = {
     
     };
         timeline.push(test_procedure);
+    
+    var age_options = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+    var gender_options = ["Male", "Female"];
+    var yn_options = ["Yes", "No"];
+
+        
+        var demographics = {
+            type: "survey-multi-choice",
+            questions: [
+                {prompt: "How old are you?", name: 'Age', options: age_options, required:true}, 
+                {prompt: "What is your gender?", name: 'Gender', options: gender_options, required: true},
+                {prompt: "Do you have any prior military experience?", name: 'Mil', options: yn_options, required: true},
+                {prompt: "Do you have any prior law enforcement experience?", name: 'Law', options: yn_options, required: true},
+                {prompt: "Do you have any form of color blindness?", name: 'Col', options: yn_options, required: true}
+            ],
+            data: {test_part: 'demographics'}
+        };
+        timeline.push(demographics);
 
 //        
         jsPsych.init({

@@ -1,7 +1,10 @@
 #jspsych-content img {
-   max-width: 100%; /* this is mainly an IE 10-11 fix */
+   max-width: 100%; 
    height: auto;
  }
+
+
+
 
 .estimate {
     display: inline-block;

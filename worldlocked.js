@@ -36,6 +36,11 @@ document.addEventListener("DOMContentLoaded", function() {
 //    }
 
     //function conditionReady(d,c) {
+    
+    //try to get the screen size here
+    windowHeight = window.innerHeight;
+    console.log(windowHeight);
+    
     var conditions = ["SL","WL","Toggle"];    
 
     var condition = jsPsych.randomization.sampleWithoutReplacement(conditions, 1)[0]
@@ -397,15 +402,15 @@ var if_node = {
             // display_element: "explainable_ai",
             timeline: timeline,
             preload_images: images,
-              exclusions: {
+            exclusions: {
                 min_width: 1000,
-                min_height: 600
+                min_height: 550
               },
- 
+            experiment_width: (windowHeight - 50) * 1.78,
             on_finish: function() {
                 
         //jsPsych.data.displayData();
-                jsPsych.data.get().filter({trial_type: 'survey-html-form'}).ignore(['trial_type','trial_index','time_elapsed,','internal_node_id']).localSave('csv');
+                jsPsych.data.get().filter([{trial_type: 'survey-html-form'}, {trial_type: 'survey-multi-choice'}]).ignore(['trial_type','trial_index','time_elapsed,','internal_node_id']).localSave('csv');
       
             //console.log(jsPsych.data.get().filter({trial_type: 'image-button-response'}).csv());
             //console.log(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());

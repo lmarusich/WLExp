@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function() {
 //
 var skipinstructions = {
     type: 'html-button-response',
-    stimulus: 'Just for testing: Skip instructions?',
+    stimulus: '<p>Condition: ' + condition + '</p><p>Just for testing: Skip instructions?</p>',
     choices: ['yes','no']
 }    
 timeline.push(skipinstructions);

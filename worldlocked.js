@@ -51,6 +51,17 @@ document.addEventListener("DOMContentLoaded", function() {
     unitDefault = "meters";
     unitChoices = ["meters", "feet"];
     
+    visibilityArray = [];
+    visStimuli = [];
+    for (var i = 10; i < 255; i+=5) {
+                imgname = i + "m.jpg"
+                visibilityArray.push("images/" + imgname);   
+                visStimuli.push({stimulus: "images/" + imgname})
+            }
+    
+    
+    
+    
     //use "/attachment/ to get image files in VS"
 //    var test_stimuli = [
 //      { stimulus: "WL_Stim_1.png"},
@@ -94,8 +105,8 @@ document.addEventListener("DOMContentLoaded", function() {
         case "SL":
             views = jsPsych.randomization.sampleWithReplacement(["SL"],combos.length);
             for (var i = 0; i < combos.length; i++) {
-                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.png";
-                images.push("WL_SL Stimuli Images Complete/" + tempstr);    
+                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.jpg";
+                images.push("images/" + tempstr);    
             }
             instructions +=  "These icons will appear on a mini-map visible within the image." 
             instruct_image = "SL.PNG"
@@ -103,22 +114,22 @@ document.addEventListener("DOMContentLoaded", function() {
         case "WL":
             views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
             for (var i = 0; i < nunique; i++) {    
-                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.png";
-                images.push("WL_SL Stimuli Images Complete/" + tempstr);
+                tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.jpg";
+                images.push("images/" + tempstr);
             }
             instructions +=  "These icons will appear in the image at the location of your team mate."
             instruct_image = "WL.PNG"
             break;
         case "Toggle":
-            var firstviews1 = jsPsych.randomization.sampleWithReplacement(["_sl.png"], combos.length/2)
-            var firstviews2 = jsPsych.randomization.sampleWithReplacement(["_wl.png"], combos.length/2)
+            var firstviews1 = jsPsych.randomization.sampleWithReplacement(["_sl.jpg"], combos.length/2)
+            var firstviews2 = jsPsych.randomization.sampleWithReplacement(["_wl.jpg"], combos.length/2)
             firstviews = jsPsych.randomization.sampleWithoutReplacement(firstviews1.concat(firstviews2),combos.length)
 //            firstviews.push(jsPsych.randomization.sampleWithReplacement(["_wl.png"],combos.length/2));
             for (var i = 0; i < nunique; i++) {    
                 tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
                 console.log(tempstr);
-                images.push("WL_SL Stimuli Images Complete/" + tempstr);
-                if (firstviews[i] == "_sl.png"){
+                images.push("images/" + tempstr);
+                if (firstviews[i] == "_sl.jpg"){
                     views.push("SL")
                 } else {
                     views.push("WL")
@@ -142,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
             test_stimuli.push({
                 stimulus: images[i],
                 estimate_type: combos[i].estimate_types,
-                data: {view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, firstview: views[i], lastview: views[i]}
+                data: {condition: condition, view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, firstview: views[i], lastview: views[i]}
             })
         }
     }
@@ -377,7 +388,48 @@ var if_node = {
         }
     
     };
-        timeline.push(test_procedure);
+        //timeline.push(test_procedure);
+    
+    var if_node2 = {
+    timeline: [test_procedure],
+    conditional_function: function(){
+        // get the data from the previous trial,
+        // and check which key was pressed
+        var data = jsPsych.data.get().last(1).values()[0];
+        if(data.button_pressed == 0){
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+    var skiptovis = {
+    type: 'html-button-response',
+    stimulus: '<p>Condition: ' + condition + '</p><p>Just for testing: Skip to visibility test?</p>',
+    choices: ['yes','no']
+}    
+timeline.push(skiptovis);
+    
+    timeline.push(if_node2);
+    
+    var visibilityimage = {
+        type: "image-button-response",
+        stimulus: jsPsych.timelineVariable('stimulus'),
+        choices: ["Stop"],
+        trial_duration: 500,
+        prompt: "stop"
+        
+    }
+    
+        var vis_procedure = {
+          timeline: [visibilityimage],
+          timeline_variables: visStimuli,
+          randomize_order: false,
+          repetitions: 1
+        }
+    //how to stop the procedure if they press a button?
+    
+     timeline.push(vis_procedure);
     
     var age_options = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
     var gender_options = ["Male", "Female"];
@@ -401,7 +453,7 @@ var if_node = {
         jsPsych.init({
             // display_element: "explainable_ai",
             timeline: timeline,
-            preload_images: images,
+            preload_images: images.concat(visibilityArray),
             exclusions: {
                 min_width: 1000,
                 min_height: 550

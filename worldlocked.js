@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
     for (var i = 10; i < 255; i+=5) {
                 imgname = i + "m.jpg"
                 visibilityArray.push("images/" + imgname);   
-                visStimuli.push({stimulus: "images/" + imgname})
+                visStimuli.push({stimulus: "images/" + imgname, data: {test_part: "visibility_image"}})
             }
     
     
@@ -417,17 +417,34 @@ timeline.push(skiptovis);
         stimulus: jsPsych.timelineVariable('stimulus'),
         choices: ["Stop"],
         trial_duration: 500,
-        prompt: "stop"
-        
+        //prompt: "stop",
+        data: jsPsych.timelineVariable('data')
     }
     
+    var if_node3 = {
+        timeline: [visibilityimage],
+        conditional_function: function(){
+        // get the data from the previous trial,
+        // and check which key was pressed
+        var data = jsPsych.data.get().last(1).values()[0];
+        console.log(data);
+       if(data.test_part == "visibility_image" & data.button_pressed == 0){
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+    
         var vis_procedure = {
-          timeline: [visibilityimage],
+          timeline: [if_node3],
           timeline_variables: visStimuli,
           randomize_order: false,
           repetitions: 1
         }
     //how to stop the procedure if they press a button?
+        
+
     
      timeline.push(vis_procedure);
     

@@ -414,11 +414,22 @@ timeline.push(skiptovis);
     
     var visibilityanim = {
         type: "animation2",
-        stimuli: visibilityArray,
-        prompt: "Press any key when the target is no longer visible"
+        stimuli: visibilityArray
+        //,
+        //prompt: "Press any key when the target is no longer visible"
     }
     
     timeline.push(visibilityanim);
+    
+        var visibilityanim2 = {
+        type: "animation2",
+        stimuli: visibilityArray,
+            frame_time: 500
+        //,
+        //prompt: "Press any key when the target is no longer visible"
+    }
+    
+    timeline.push(visibilityanim2);
     
 //    var visibilityimage = {
 //        type: "image-button-response",

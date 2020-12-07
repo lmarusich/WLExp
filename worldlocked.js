@@ -52,11 +52,11 @@ document.addEventListener("DOMContentLoaded", function() {
     unitChoices = ["meters", "feet"];
     
     visibilityArray = [];
-    visStimuli = [];
+    //visStimuli = [];
     for (var i = 10; i < 255; i+=5) {
                 imgname = i + "m.jpg"
                 visibilityArray.push("images/" + imgname);   
-                visStimuli.push({stimulus: "images/" + imgname, data: {test_part: "visibility_image"}})
+              //  visStimuli.push({stimulus: "images/" + imgname, data: {test_part: "visibility_image"}})
             }
     
     
@@ -73,14 +73,11 @@ document.addEventListener("DOMContentLoaded", function() {
 //        stimuli.push("/attachment/" + setSizes[i] + "absent" + j + ".png");
 //    }
 //}
-    
-    //Need to assign a condition
+  
     //Probably need to force full screen/ask mike what min pixel dimensions should be
-    //should there be a maximum too? probably.
     //get data in the format we want
     //still need instructions
     //still need staircase procedure
-    //for toggle condition, need to aggregate the time spent in each view, number of switches, final view
     //maybe give them the negative on the orientation?
     //add demographics collection
     
@@ -124,10 +121,8 @@ document.addEventListener("DOMContentLoaded", function() {
             var firstviews1 = jsPsych.randomization.sampleWithReplacement(["_sl.jpg"], combos.length/2)
             var firstviews2 = jsPsych.randomization.sampleWithReplacement(["_wl.jpg"], combos.length/2)
             firstviews = jsPsych.randomization.sampleWithoutReplacement(firstviews1.concat(firstviews2),combos.length)
-//            firstviews.push(jsPsych.randomization.sampleWithReplacement(["_wl.png"],combos.length/2));
             for (var i = 0; i < nunique; i++) {    
                 tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
-                console.log(tempstr);
                 images.push("images/" + tempstr);
                 if (firstviews[i] == "_sl.jpg"){
                     views.push("SL")
@@ -332,21 +327,10 @@ var if_node = {
         
         data: jsPsych.timelineVariable('data'),
         on_finish: function(data){
-            if(condition == "Toggle"){
-                //console.log(nswitches);
-                //var toggled_data = jsPsych.data.get().last(nswitches + 1);
-                //console.log(toggled_data.csv());
-                //console.log(jsPsych.data.getLastTimelineData().csv());
-                
+            if(condition == "Toggle"){    
                 data.firstview = firstview;
                 data.lastview = lastview;
-                
-//            } else if(condition == "WL"){
-//                data.time_in_WL = time_in_WL;
-//            } else {
-//                data.time_in_SL = time_in_SL;
             }
-            
             data.nswitches = nswitches;
             nswitches = 0;
             data.time_in_WL = time_in_WL;
@@ -357,11 +341,9 @@ var if_node = {
             if(data.estimate_type == "Distance"){
                 unitDefault = JSON.parse(data.responses).unit;
             }
-        
         }
     };
     
-
 
     if (condition == "Toggle"){
         var test_procedure = {
@@ -412,24 +394,51 @@ timeline.push(skiptovis);
     
     timeline.push(if_node2);
     
+//    var preload_trial = {
+//  type: 'call-function',
+//  async: true,
+//  func: function(done){
+//    jsPsych.pluginAPI.preloadImages(visibilityArray, done);
+//  }
+//}
+//    timeline.push(preload_trial)
+    
+    visDec = {
+        prompt: 'Press any key when the target is no longer visible', 
+        stimulus: visibilityArray, 
+        data: {test_part: 'visibility', order: "decreasing"}}
+    visInc = {
+        prompt: 'Press any key when the target becomes visible', 
+        stimulus: visibilityArray.slice().reverse(),
+        data: {test_part: 'visibility', order: "increasing"}}     
+    
+    visStimuli = [visDec, visInc, visDec, visInc];
+   
+    
+    var visibilityinstruct = {
+        type: "html-button-response",
+          stimulus: jsPsych.timelineVariable('prompt'),
+          choices: ["Ready"],
+          post_trial_gap: 100
+    }
+    
     var visibilityanim = {
         type: "animation2",
-        stimuli: visibilityArray
-        //,
-        //prompt: "Press any key when the target is no longer visible"
+        stimuli: jsPsych.timelineVariable('stimulus'),
+        frame_time: 500,
+        prompt: jsPsych.timelineVariable('prompt'),
+        post_trial_gap: 500,
+        data: jsPsych.timelineVariable('data')
     }
     
-    timeline.push(visibilityanim);
+    var vis_procedure = {
+          timeline: [visibilityinstruct, visibilityanim],
+          timeline_variables: visStimuli,
+          randomize_order: false,
+          repetitions: 1
+        }
     
-        var visibilityanim2 = {
-        type: "animation2",
-        stimuli: visibilityArray,
-            frame_time: 500
-        //,
-        //prompt: "Press any key when the target is no longer visible"
-    }
-    
-    timeline.push(visibilityanim2);
+    timeline.push(vis_procedure);
     
 //    var visibilityimage = {
 //        type: "image-button-response",
@@ -461,10 +470,6 @@ timeline.push(skiptovis);
 //          randomize_order: false,
 //          repetitions: 1
 //        }
-    //how to stop the procedure if they press a button?
-        
-
-    
      //timeline.push(vis_procedure);
     
     var age_options = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
@@ -490,6 +495,7 @@ timeline.push(skiptovis);
             // display_element: "explainable_ai",
             timeline: timeline,
             preload_images: images.concat(visibilityArray),
+            //preload_images: images,
             exclusions: {
                 min_width: 1000,
                 min_height: 550
@@ -498,7 +504,7 @@ timeline.push(skiptovis);
             on_finish: function() {
                 
         //jsPsych.data.displayData();
-                jsPsych.data.get().filter([{trial_type: 'survey-html-form'}, {trial_type: 'survey-multi-choice'}]).ignore(['trial_type','trial_index','time_elapsed,','internal_node_id']).localSave('csv');
+                jsPsych.data.get().filter([{trial_type: 'survey-html-form'}, {trial_type: 'survey-multi-choice'}, {trial_type: 'animation2'}]).ignore(['trial_type','trial_index','time_elapsed,','internal_node_id']).localSave('csv');
       
             //console.log(jsPsych.data.get().filter({trial_type: 'image-button-response'}).csv());
             //console.log(jsPsych.data.get().filter([{test_part: 'practice'}, {test_part: 'test'}, {test_part: 'confidence'}, {test_part: 'demographics'}, {test_part: 'freeresponse'}]).ignore('stimulus').csv());

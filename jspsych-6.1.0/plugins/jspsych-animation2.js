@@ -68,7 +68,7 @@ jsPsych.plugins.animation2 = (function() {
 
     var animate_interval = setInterval(function() {
       var showImage = true;
-      display_element.innerHTML = ''; // clear everything
+      //display_element.innerHTML = ''; // clear everything
       animate_frame++;
       if (animate_frame == trial.stimuli.length) {
         animate_frame = 0;
@@ -86,7 +86,14 @@ jsPsych.plugins.animation2 = (function() {
 
     function show_next_frame() {
       // show image
-      display_element.innerHTML = '<img src="'+trial.stimuli[animate_frame]+'" id="jspsych-animation-image"></img>';
+      if(animate_frame == 0){
+	       display_element.innerHTML = '<img src="'+trial.stimuli[animate_frame]+'" id="jspsych-animation-image"></img>';
+            if (trial.prompt !== null) {
+                display_element.innerHTML += trial.prompt;
+            }
+      }else{
+	       document.getElementById("jspsych-animation-image").src = trial.stimuli[animate_frame];	
+      }
 
       current_stim = trial.stimuli[animate_frame];
 
@@ -96,9 +103,9 @@ jsPsych.plugins.animation2 = (function() {
         "time": performance.now() - startTime
       });
 
-      if (trial.prompt !== null) {
-        display_element.innerHTML += trial.prompt;
-      }
+//      if (trial.prompt !== null) {
+//        display_element.innerHTML += trial.prompt;
+//      }
 
       if (trial.frame_isi > 0) {
         jsPsych.pluginAPI.setTimeout(function() {
@@ -147,7 +154,10 @@ jsPsych.plugins.animation2 = (function() {
 
       var trial_data = {
         "animation_sequence": JSON.stringify(animation_sequence),
-        "responses": JSON.stringify(responses)
+        //"responses": JSON.stringify(responses)
+          "rt": responses[0].rt,
+          "stimulus": responses[0].stimulus,
+          "key_press": responses[0].key_press
       };
 
       jsPsych.finishTrial(trial_data);

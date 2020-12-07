@@ -63,7 +63,12 @@ jsPsych.plugins.animation2 = (function() {
     var reps = 0;
     var startTime = performance.now();
     var animation_sequence = [];
-    var responses = [];
+    var response = [];
+    var response = {
+      rt: null,
+      key_press: null,
+      stimulus: null
+    };
     var current_stim = "";
 
     var animate_interval = setInterval(function() {
@@ -122,11 +127,10 @@ jsPsych.plugins.animation2 = (function() {
 
     var after_response = function(info) {
 
-      responses.push({
-        key_press: info.key,
-        rt: info.rt,
-        stimulus: current_stim
-      });
+      response.key_press = info.key;
+      response.rt = info.rt;
+      response.stimulus = current_stim;
+      
 
       // after a valid response, the stimulus will have the CSS class 'responded'
       // which can be used to provide visual feedback that a response was recorded
@@ -155,9 +159,9 @@ jsPsych.plugins.animation2 = (function() {
       var trial_data = {
         "animation_sequence": JSON.stringify(animation_sequence),
         //"responses": JSON.stringify(responses)
-          "rt": responses[0].rt,
-          "stimulus": responses[0].stimulus,
-          "key_press": responses[0].key_press
+          "rt": response.rt,
+          "stimulus": response.stimulus,
+          "key_press": response.key_press
       };
 
       jsPsych.finishTrial(trial_data);

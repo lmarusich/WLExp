@@ -5,14 +5,14 @@
  * documentation: docs.jspsych.org
  */
 
-jsPsych.plugins.animation = (function() {
+jsPsych.plugins.animation2 = (function() {
 
   var plugin = {};
 
   jsPsych.pluginAPI.registerPreload('animation', 'stimuli', 'image');
 
   plugin.info = {
-    name: 'animation',
+    name: 'animation2',
     description: '',
     parameters: {
       stimuli: {

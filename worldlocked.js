@@ -412,41 +412,49 @@ timeline.push(skiptovis);
     
     timeline.push(if_node2);
     
-    var visibilityimage = {
-        type: "image-button-response",
-        stimulus: jsPsych.timelineVariable('stimulus'),
-        choices: ["Stop"],
-        trial_duration: 500,
-        //prompt: "stop",
-        data: jsPsych.timelineVariable('data')
+    var visibilityanim = {
+        type: "animation2",
+        stimuli: visibilityArray,
+        prompt: "Press any key when the target is no longer visible"
     }
     
-    var if_node3 = {
-        timeline: [visibilityimage],
-        conditional_function: function(){
-        // get the data from the previous trial,
-        // and check which key was pressed
-        var data = jsPsych.data.get().last(1).values()[0];
-        console.log(data);
-       if(data.test_part == "visibility_image" & data.button_pressed == 0){
-            return false;
-        } else {
-            return true;
-        }
-    }
-}
+    timeline.push(visibilityanim);
     
-        var vis_procedure = {
-          timeline: [if_node3],
-          timeline_variables: visStimuli,
-          randomize_order: false,
-          repetitions: 1
-        }
+//    var visibilityimage = {
+//        type: "image-button-response",
+//        stimulus: jsPsych.timelineVariable('stimulus'),
+//        choices: ["Stop"],
+//        trial_duration: 500,
+//        //prompt: "stop",
+//        data: jsPsych.timelineVariable('data')
+//    }
+    
+//    var if_node3 = {
+//        timeline: [visibilityimage],
+//        conditional_function: function(){
+//        // get the data from the previous trial,
+//        // and check which key was pressed
+//        var data = jsPsych.data.get().last(1).values()[0];
+//        console.log(data);
+//       if(data.test_part == "visibility_image" & data.button_pressed == 0){
+//            return false;
+//        } else {
+//            return true;
+//        }
+//    }
+//}
+//    
+//        var vis_procedure = {
+//          timeline: [if_node3],
+//          timeline_variables: visStimuli,
+//          randomize_order: false,
+//          repetitions: 1
+//        }
     //how to stop the procedure if they press a button?
         
 
     
-     timeline.push(vis_procedure);
+     //timeline.push(vis_procedure);
     
     var age_options = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
     var gender_options = ["Male", "Female"];

@@ -22,6 +22,12 @@ jsPsych.plugins.animation2 = (function() {
         array: true,
         description: 'The images to be displayed.'
       },
+      stimulus_width: {
+        type: jsPsych.plugins.parameterType.INT,
+        pretty_name: 'Image width',
+        default: null,
+        description: 'Set the image width in pixels'
+      },
       frame_time: {
         type: jsPsych.plugins.parameterType.INT,
         pretty_name: 'Frame time',
@@ -70,6 +76,12 @@ jsPsych.plugins.animation2 = (function() {
       stimulus: null
     };
     var current_stim = "";
+     
+    var addstyle = "";  
+    if(trial.stimulus_width !== null){
+      var addstyle = 'style="max-width:' + trial.stimulus_width + 'px;height:auto;"';
+      
+    }
 
     var animate_interval = setInterval(function() {
       var showImage = true;
@@ -92,9 +104,9 @@ jsPsych.plugins.animation2 = (function() {
     function show_next_frame() {
       // show image
       if(animate_frame == 0){
-	       display_element.innerHTML = '<img src="'+trial.stimuli[animate_frame]+'" id="jspsych-animation-image"></img>';
+	       display_element.innerHTML = '<img src="'+trial.stimuli[animate_frame]+'" id="jspsych-animation-image"' + addstyle + '></img>';
             if (trial.prompt !== null) {
-                display_element.innerHTML += trial.prompt;
+                display_element.innerHTML += '<div>' + trial.prompt + '</div>';
             }
       }else{
 	       document.getElementById("jspsych-animation-image").src = trial.stimuli[animate_frame];	

@@ -37,31 +37,87 @@ document.addEventListener("DOMContentLoaded", function() {
 
     //function conditionReady(d,c) {
     
-    //try to get the screen size here
-    windowHeight = window.innerHeight;
-    console.log(windowHeight);
+    var conditions = ["SL","WL","Toggle"];  
     
-    var conditions = ["SL","WL","Toggle"];    
 
     var condition = jsPsych.randomization.sampleWithoutReplacement(conditions, 1)[0]
         //var condition = c;
+    var toggleInstrOrder = jsPsych.randomization.sampleWithoutReplacement(['SL','WL'], 2);
         
     console.log("condition:", condition);
+    
+    window.addEventListener('resize', function(event){
+        mainwidth = getdims();
+        console.log(widths);
+    });
+
+    
+    mainwidth = getdims();
+        
+    function getdims() {
+        
+        var windowHeight = window.innerHeight;
+        var windowWidth = window.innerWidth * .95;
+        console.log(windowWidth);
+        var mwtest = (windowHeight - 50) * 1.78;
+                
+        if (mwtest > windowWidth){
+            mwtest = windowWidth;
+        }
+        
+        var mw = (windowHeight - 265)* 1.78;
+        if (mw > windowWidth){
+            mw = "100%"
+        } else {
+            mw = mw/windowWidth * 100 + "%";        
+        }
+
+        var mw2 = (windowHeight - 191)* 1.78;
+        if (mw2 > windowWidth){
+            mw2 = "100%"
+            mw4 = "48%"
+        } else {
+            mw4 = (mw2-20)/(2*windowWidth) * 100 + "%"
+            mw2 = mw2/windowWidth * 100 + "%";
+        }
+        
+        var mw3 = (windowHeight - 265) * 1.78 * 2 + 20;
+        if (mw3 > windowWidth){
+            mw3 = (windowWidth - 20)/(2* windowWidth) * 100 + "%";
+        } else {
+            mw3 = mw3/windowWidth * 100 + "%";
+        }
+        
+        var mw4 = (windowHeight - 191) * 1.78 * 2 + 20;
+        if (mw4 > windowWidth){
+            mw4 = (windowWidth - 20)/(2* windowWidth) * 100 + "%";
+        } else {
+            mw4 = mw4/windowWidth * 100 + "%";
+        }
+        
+        //update instruction image widths
+        instructarray1 = makeInstructions(condition, mw, mw2, mw3, mw4, toggleInstrOrder);
+
+        return(mwtest)
+    }
+        
+    
     
     unitDefault = "meters";
     unitChoices = ["meters", "feet"];
     
     visibilityArray = [];
+    visibilityArray2 = [];
     //visStimuli = [];
     for (var i = 10; i < 255; i+=5) {
-                imgname = i + "m.jpg"
-                visibilityArray.push("images/" + imgname);   
+        imgname = i + "m.jpg"
+        visibilityArray.push("images/" + imgname);
+        visibilityArray.push("images/Experiment_Background.jpg")
               //  visStimuli.push({stimulus: "images/" + imgname, data: {test_part: "visibility_image"}})
-            }
+        visibilityArray2.push("images/" + imgname);
+    }
     
-    
-    
-    
+      
     //use "/attachment/ to get image files in VS"
 //    var test_stimuli = [
 //      { stimulus: "WL_Stim_1.png"},
@@ -76,10 +132,12 @@ document.addEventListener("DOMContentLoaded", function() {
   
     //Probably need to force full screen/ask mike what min pixel dimensions should be
     //get data in the format we want
-    //still need instructions
-    //still need staircase procedure
     //maybe give them the negative on the orientation?
-    //add demographics collection
+    //fix instructions
+    //tweak data collection on visibility test
+    //record which image shown first in instructions (toggle)
+    //make toggle instructions side by side the whole time, no interaction
+    //if using spaced out visibility option, figure out how to record the right distance if the hit the key when it's blank
     
     
     allvars = {
@@ -96,8 +154,8 @@ document.addEventListener("DOMContentLoaded", function() {
     images = [];
     views = [];
    
-    ntrials = 10;
-    instructions = "<p>In today's task, you will view an image of a park with virtual icons to indicate the location of hypothetical team mates.</p><p>"
+    ntrials = 2;
+    
     switch (condition){
         case "SL":
             views = jsPsych.randomization.sampleWithReplacement(["SL"],combos.length);
@@ -105,8 +163,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_sl.jpg";
                 images.push("images/" + tempstr);    
             }
-            instructions +=  "These icons will appear on a mini-map visible within the image." 
-            instruct_image = "SL.PNG"
             break;
         case "WL":
             views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
@@ -114,8 +170,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.jpg";
                 images.push("images/" + tempstr);
             }
-            instructions +=  "These icons will appear in the image at the location of your team mate."
-            instruct_image = "WL.PNG"
             break;
         case "Toggle":
             var firstviews1 = jsPsych.randomization.sampleWithReplacement(["_sl.jpg"], combos.length/2)
@@ -130,105 +184,98 @@ document.addEventListener("DOMContentLoaded", function() {
                     views.push("WL")
                 }    
             }
-            instructions +=  "You can choose whether these icons appear in the image at the location of your team mate, or on a mini-map visible within the image." 
-            instruct_image = jsPsych.randomization.sampleWithReplacement(["SL.PNG","WL.PNG"],1);
+            
+            temptext = ['on a mini-map visible within the image', 'in the image at the location of your teammates']
+            //instruct_image = jsPsych.randomization.sampleWithReplacement(["Instructions_SL_JustMarkers.png", "Instructions_WL_JustMarkers.png"],2);
+
+            //instruct1 = 'You can choose whether these icons appear ' + temptext[temporder[0]] + ', or ' + temptext[temporder[1]] + '.</p>' ;
+            //instruct2 = '<img class = "toggleinstruct" src=' + instruct_images[temporder[0]] + '></img><img class = "toggleinstruct" src=' + instruct_images[temporder[1]] + '></img></p>';
     }
     
-    instructions += "</p><p>In this experiment you will be asked to estimate the distance to the average location of the icons, estimate the heading (from your location) to the average location of the icons, or identify how many icons are visible.</p>"
-    // }
     test_stimuli = [];
+    tempviewdata = ""
     for (var i = 0; i < images.length; i++) {
         if (condition == "Toggle"){
-            test_stimuli.push({
-                stimulus: images[i],
-                estimate_type: combos[i].estimate_types,
-                data: {condition: condition, view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, firstview: "", lastview: ""}
-            })
-        } else {
-            test_stimuli.push({
-                stimulus: images[i],
-                estimate_type: combos[i].estimate_types,
-                data: {condition: condition, view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, firstview: views[i], lastview: views[i]}
-            })
+            tempviewdata = views[i];
+        } 
+        test_stimuli.push({
+            stimulus: images[i],
+            estimate_type: combos[i].estimate_types,
+            data: {condition: condition, view: views[i], distance: combos[i].distances, orientation: combos[i].orientations, number: combos[i].numbers, estimate_type: combos[i].estimate_types, nswitches: 0, time_in_SL: 0, time_in_WL: 0, //firstview: tempviewdata, lastview: tempviewdata}
+                   firstview: "", lastview: ""}
+        })
+    }   
+
+    /* create timeline */
+    var timeline = []; 
+
+    var skipinstructions = {
+        type: 'html-button-response',
+        stimulus: '<p>Condition: ' + condition + '</p><p>Just for testing: Skip instructions?</p>',
+        choices: ['yes','no']
+    }    
+    timeline.push(skipinstructions);
+    
+    var instructionset1 = {
+        type: 'instructions',
+        pages: [],
+        on_start: function(trial){
+          //recalculate size of image on every trial, in case window size changed since start of exp
+            trial.pages = instructarray1
+        },
+        show_clickable_nav: true
+    }
+    
+    var if_node = {
+        timeline: [instructionset1],
+        conditional_function: function(){
+            // get the data from the previous trial,
+            // and check which key was pressed
+            var data = jsPsych.data.get().last(1).values()[0];
+            if(data.button_pressed == 0){
+                return false;
+            } else {
+                return true;
+            }
         }
     }
-                
-
-//        /* create timeline */
-        var timeline = []; 
-//        
-//
-var skipinstructions = {
-    type: 'html-button-response',
-    stimulus: '<p>Condition: ' + condition + '</p><p>Just for testing: Skip instructions?</p>',
-    choices: ['yes','no']
-}    
-timeline.push(skipinstructions);
-var instructionset1 = {
-    type: 'instructions',
-    pages: [
-        instructions,
-        '<img src=' + instruct_image + '></img>',
-         'To estimate distances, enter the distance (in any metric you feel comfortable) into the text-field. Please indicate which metric you are using by selecting the metric in the drop-down menu. If multiple icons are visible, please indicate the average distance to the icons.',
-        'image with 2 icons and 10m distance indicated',
-        'To help you calibrate distances in the image, you will see a flag located 10m from your location. Please estimate the average distance to the two targets.<br><br><div class = "estimate">Distance: <input id = "mynumberinput" name="estimate" type="number" required/></div><div class = "estimate"><input name="unit" type="radio" value = "feet" id = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters" id="meters"><label for="meters"> Meters</label></div><br>',
-        'The actual distance was 20m (translate to other units?)',
-        'To estimate heading, enter your response, in degrees, into the text field. If multiple icons are visible, please enter the average heading of the icons.',
-        'image with 2 icons and orientation lines',
-        'To help calibrate headings, we are displaying a line that indicates 0 degrees (or straight ahead) and one indicating 10 degrees to the left. Please practice estimating the heading to the two visible targets',
-        'To estimate the quantity of icons, please enter the number of icons you see',
-        'Image with 2 icons (same as above',
-        'Allow participants to enter estimate, provide “2” for feedback'
-    ],
-    show_clickable_nav: true
-}
-
-var if_node = {
-    timeline: [instructionset1],
-    conditional_function: function(){
-        // get the data from the previous trial,
-        // and check which key was pressed
-        var data = jsPsych.data.get().last(1).values()[0];
-        if(data.button_pressed == 0){
-            return false;
-        } else {
-            return true;
-        }
-    }
-}
     
     timeline.push(if_node);
     
         
-        var questionPrompt = {
-          type: "html-keyboard-response",
-          stimulus: function(){
-              var temp_html = "<p> You will be asked to estimate <span style='color:red;font-weight: bold'>" + jsPsych.timelineVariable('estimate_type',true) + "</span></p>"
-              return temp_html;
-          },
-          choices: jsPsych.NO_KEYS,
-          trial_duration: 500,
-          post_trial_gap: 500
-          };
-    
-        var image = {
-          type: "image-button-response",
-          stimulus: jsPsych.timelineVariable('stimulus'),
-          choices: ["Ready"],
-          post_trial_gap: 250,
-            data: jsPsych.timelineVariable('data'),
-            on_finish: function(data){
-                if (data.view == "WL"){
-                    time_in_WL += data.rt;
-                } else {
-                    time_in_SL += data.rt;
-                }
+    var questionPrompt = {
+      type: "html-keyboard-response",
+      stimulus: function(){
+          var temp_html = "<p> You will be asked to estimate <span style='color:red;font-weight: bold'>" + jsPsych.timelineVariable('estimate_type',true) + "</span></p>"
+          return temp_html;
+      },
+      choices: jsPsych.NO_KEYS,
+      trial_duration: 500,
+      post_trial_gap: 500
+    };
 
-                console.log("time in WL: " + time_in_WL);
-                console.log("time in SL: " + time_in_SL);
-                
-            },
-          };
+    var image = {
+      type: "image-button-response",
+      stimulus: jsPsych.timelineVariable('stimulus'),
+      on_start: function(trial){
+          //recalculate size of image on every trial, in case window size changed since start of exp
+          trial.stimulus_width = mainwidth;
+      },
+      choices: ["Ready"],
+      post_trial_gap: 250,
+        data: jsPsych.timelineVariable('data'),
+        on_finish: function(data){
+            if (data.view == "WL"){
+                time_in_WL += data.rt;
+            } else {
+                time_in_SL += data.rt;
+            }
+
+            console.log("time in WL: " + time_in_WL);
+            console.log("time in SL: " + time_in_SL);
+
+        },
+      };
  
     var nswitches = 0;
     var firstview = "?";
@@ -238,6 +285,7 @@ var if_node = {
     
     var toggle_image = {
         on_start: function(trial){
+            trial.stimulus_width = mainwidth;
             if (jsPsych.data.get().last(1).values()[0].view == "WL"){
                 trial.stimulus = trial.stimulus.replace("wl", "sl");
     //            var tempswitches = trial.data.nswitches
@@ -304,12 +352,11 @@ var if_node = {
         post_trial_gap: 500,
         on_load: function() {
             document.getElementById("mynumberinput").focus();
-
+            //have one of the units selected by default (should be whatever the person picked last)
             radiobtn = document.getElementById(unitDefault);
-                if (radiobtn != null){
-                    console.log(radiobtn);
+            if (radiobtn != null){
                 radiobtn.checked = true;
-                }
+            }
         },
     
         html: function(){
@@ -394,21 +441,12 @@ timeline.push(skiptovis);
     
     timeline.push(if_node2);
     
-//    var preload_trial = {
-//  type: 'call-function',
-//  async: true,
-//  func: function(done){
-//    jsPsych.pluginAPI.preloadImages(visibilityArray, done);
-//  }
-//}
-//    timeline.push(preload_trial)
-    
     visDec = {
-        prompt: 'Press any key when the target is no longer visible', 
+        prompt: 'Press any key when the target is no longer visible (Animation Option #1)', 
         stimulus: visibilityArray, 
         data: {test_part: 'visibility', order: "decreasing"}}
     visInc = {
-        prompt: 'Press any key when the target becomes visible', 
+        prompt: 'Press any key when the target becomes visible (Animation Option #1)', 
         stimulus: visibilityArray.slice().reverse(),
         data: {test_part: 'visibility', order: "increasing"}}     
     
@@ -424,6 +462,10 @@ timeline.push(skiptovis);
     
     var visibilityanim = {
         type: "animation2",
+        on_start: function(trial){
+          //recalculate size of image on every trial, in case window size changed since start of exp
+          trial.stimulus_width = mainwidth;
+      },
         stimuli: jsPsych.timelineVariable('stimulus'),
         frame_time: 500,
         prompt: jsPsych.timelineVariable('prompt'),
@@ -439,6 +481,46 @@ timeline.push(skiptovis);
         }
     
     timeline.push(vis_procedure);
+    
+    visDec2 = {
+        prompt: 'Press any key when the target is no longer visible (Animation Option #2)', 
+        stimulus: visibilityArray2, 
+        data: {test_part: 'visibility', order: "decreasing"}}
+    visInc2 = {
+        prompt: 'Press any key when the target becomes visible (Animation Option #2)', 
+        stimulus: visibilityArray2.slice().reverse(),
+        data: {test_part: 'visibility', order: "increasing"}}     
+    
+    visStimuli2 = [visDec2, visInc2, visDec2, visInc2];
+    
+        var visibilityinstruct2 = {
+        type: "html-button-response",
+          stimulus: jsPsych.timelineVariable('prompt'),
+          choices: ["Ready"],
+          post_trial_gap: 100
+    }
+    
+    var visibilityanim2 = {
+        type: "animation2",
+        on_start: function(trial){
+          //recalculate size of image on every trial, in case window size changed since start of exp
+          trial.stimulus_width = mainwidth;
+      },
+        stimuli: jsPsych.timelineVariable('stimulus'),
+        frame_time: 500,
+        prompt: jsPsych.timelineVariable('prompt'),
+        post_trial_gap: 500,
+        data: jsPsych.timelineVariable('data')
+    }
+    
+    var vis_procedure2 = {
+          timeline: [visibilityinstruct2, visibilityanim2],
+          timeline_variables: visStimuli2,
+          randomize_order: false,
+          repetitions: 1
+        }
+    
+    timeline.push(vis_procedure2);
     
 //    var visibilityimage = {
 //        type: "image-button-response",
@@ -492,7 +574,7 @@ timeline.push(skiptovis);
 
 //        
         jsPsych.init({
-            // display_element: "explainable_ai",
+            //display_element: "experiment-container",
             timeline: timeline,
             preload_images: images.concat(visibilityArray),
             //preload_images: images,
@@ -500,7 +582,7 @@ timeline.push(skiptovis);
                 min_width: 1000,
                 min_height: 550
               },
-            experiment_width: (windowHeight - 50) * 1.78,
+            //experiment_width: expwidth,
             on_finish: function() {
                 
         //jsPsych.data.displayData();

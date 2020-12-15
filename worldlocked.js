@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     estimate_html1 = '<p> <div class = "estimate">'
-    estimate_html2 = ': <input id = "mynumberinput" name="estimate" type="number" required/>'
+    estimate_html2 = '<input id = "mynumberinput" name="estimate" type="number" required/>'
     estimate_html3 = '</div><div class = "estimate"><input name="unit" type="radio" value = "feet" id = "feet"> <label for = "feet">Feet</label><br><input type="radio" name="unit" value="meters" id="meters"><label for="meters"> Meters</label><br>'
     estimate_html4 = '</div></p>'
     
@@ -339,10 +339,15 @@ document.addEventListener("DOMContentLoaded", function() {
     
         html: function(){
             var temp_type = jsPsych.timelineVariable('estimate_type',true)
-            var temp_html = estimate_html1 + temp_type + estimate_html2;
+            var temp_html = estimate_html1 + temp_type + ': ';
+            if (temp_type == "Heading"){
+                temp_html += '  - ';
+            }
+            temp_html +=  estimate_html2;
+            
             if (temp_type == "Distance"){
                 temp_html += estimate_html3;
-            } else if (temp_type == "Orientation"){
+            } else if (temp_type == "Heading"){
                 temp_html += '&nbspdegrees';
             } 
             

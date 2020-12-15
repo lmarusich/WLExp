@@ -490,7 +490,7 @@ document.addEventListener("DOMContentLoaded", function() {
         ],
         data: {test_part: 'demographics'}
     };
-//        timeline.push(demographics);
+        timeline.push(demographics);
        
     jsPsych.init({
         timeline: timeline,

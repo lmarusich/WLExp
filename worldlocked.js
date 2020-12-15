@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function() {
     images = [];
     views = [];
    
-    ntrials = 2;
+    ntrials = 10;
     
     switch (condition){
         case "SL":

@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function() {
     images = [];
     views = [];
    
-    ntrials = 10;
+    ntrials = 252;
     
     switch (condition){
         case "SL":
@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", function() {
             break;
         case "WL":
             views = jsPsych.randomization.sampleWithReplacement(["WL"],combos.length);
-            for (var i = 0; i < nunique; i++) {    
+            for (var i = 0; i < combos.length; i++) {    
                 tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + "_wl.jpg";
                 images.push("images/" + tempstr);
             }
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var firstviews1 = jsPsych.randomization.sampleWithReplacement(["_sl.jpg"], combos.length/2)
             var firstviews2 = jsPsych.randomization.sampleWithReplacement(["_wl.jpg"], combos.length/2)
             firstviews = jsPsych.randomization.sampleWithoutReplacement(firstviews1.concat(firstviews2),combos.length)
-            for (var i = 0; i < nunique; i++) {    
+            for (var i = 0; i < combos.length; i++) {    
                 tempstr = combos[i].numbers + "_" + combos[i].orientations + "_" + combos[i].distances + firstviews[i];
                 images.push("images/" + tempstr);
                 if (firstviews[i] == "_sl.jpg"){

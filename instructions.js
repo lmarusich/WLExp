@@ -22,7 +22,6 @@ instruct14 = 'There are 3 targets shown';
     
 //make a function to put the instructions together
 function makeInstructions(condition, width1, width2, width3, width4, order = ['SL','WL']) {
-    console.log(width3)
     var invisp = '<p class = "invis">'
     var visp = '<p>'
     
@@ -31,7 +30,7 @@ function makeInstructions(condition, width1, width2, width3, width4, order = ['S
         var temp2 = '<img src=' + instruct_images[order[0]] + ' style="max-width:' + width3 + ';height:auto;padding:5px;"></img><img src=' + instruct_images[order[1]] + ' style="max-width:' + width3 + ';height:auto;padding:5px;"></img></p>';
         var temp6 = '<img src=' + 'images/' + order[0] + '_DistanceExample.jpg style="max-width:' + width4 + ';height:auto;padding:5px"/><img src=' + 'images/' + order[1] + '_DistanceExample.jpg style="max-width:' + width4 + ';height:auto;padding:5px"/></p>';
         var temp10 = '<img src=' + 'images/' + order[0] + '_HeadingExample.jpg style="max-width:' + width4 + ';height:auto;padding:5px"/><img src=' + 'images/' + order[1] + '_HeadingExample.jpg style="max-width:' + width4 + ';height:auto;padding:5px"/></p>';
-        var temp13 = '<img src=' + instruct_images[order[0]] + ' style="max-width:' + width4 + ';height:auto;padding:5px"/><img src=' + instruct_images[order[0]] + ' style="max-width:' + width4 + ';height:auto;padding:5px"/></p>';
+        var temp13 = '<img src=' + instruct_images[order[0]] + ' style="max-width:' + width4 + ';height:auto;padding:5px"/><img src=' + instruct_images[order[1]] + ' style="max-width:' + width4 + ';height:auto;padding:5px"/></p>';
     } else {
         var temp1 = 'These icons will appear ' + instruct_text[condition] + '</p>';
         var temp2 = '<img src=' + instruct_images[condition] + ' style="max-width:' + width1 + ';height:auto;"/></p>';

@@ -114,6 +114,8 @@ document.addEventListener("DOMContentLoaded", function() {
         //visibilityArray.push("images/Experiment_Background.jpg")
         //visibilityArray2.push("images/" + imgname);
     }
+    
+    instruct_image_array = ["images/Instructions_SL_JustMarkers.jpg","images/Instructions_WL_JustMarkers.jpg", "images/SL_DistanceExample.jpg", "images/WL_DistanceExample.jpg", "images/SL_HeadingExample.jpg", "images/WL_HeadingExample.jpg",]
 
       
     //use "/attachment/ to get image files in VS"
@@ -487,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function() {
        
     jsPsych.init({
         timeline: timeline,
-        preload_images: images.concat(visibilityArray),
+        preload_images: images.concat(visibilityArray, instruct_image_array),
         //preload_images: images,
         exclusions: {
             min_width: 1000,
